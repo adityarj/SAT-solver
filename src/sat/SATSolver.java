@@ -1,5 +1,6 @@
 package sat;
 
+import immutable.EmptyImList;
 import immutable.ImList;
 import immutable.NonEmptyImList;
 import javafx.geometry.Pos;
@@ -81,7 +82,7 @@ public class SATSolver {
     private static ImList<Clause> substitute(ImList<Clause> clauses, Literal l) {
         //Take in a list of clauses. and a literal and give out a reduced list of clauses, with sorting.,
         Clause temp;
-        ImList<Clause> newClauseList = null;
+        ImList<Clause> newClauseList = new EmptyImList<>();
         Clause small = null;
 
         //Smallest is the smallest clause
@@ -89,16 +90,14 @@ public class SATSolver {
             temp = each.reduce(l);
             //Create a new list, and copy the contents of the reduction into the new list\
 
-            if (temp != null && newClauseList == null) {
+            if (temp != null && newClauseList.size() == 0) {
                 small  = temp;
-                newClauseList = new NonEmptyImList<>(small);
+                newClauseList = newClauseList.add(temp);
             } else if (temp != null) {
                 if (temp.size() < small.size()) {
                     small = temp;
                 }
                 newClauseList = newClauseList.add(temp);
-            } else {
-
             }
         }
 
