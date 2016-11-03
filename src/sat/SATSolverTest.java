@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 */
 
+import immutable.ImList;
 import javafx.geometry.Pos;
 import sat.env.*;
 import sat.formula.*;
@@ -41,7 +42,7 @@ public class SATSolverTest {
 
         try {
 
-            br = new BufferedReader(new FileReader("bin/sat/unsat1.cnf"));
+            br = new BufferedReader(new FileReader("bin/sat/s8Sat.cnf"));
             String line = br.readLine();
 
             while (line!= null) {
@@ -78,7 +79,6 @@ public class SATSolverTest {
 
 
     }
-    
 	
     public void testSATSolver1(){
 

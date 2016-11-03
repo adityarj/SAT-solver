@@ -15,6 +15,7 @@ public interface ImList<E> extends Iterable<E> {
      * @requires e != null
      * @return [e,e_0,...,e_n] where this list = [e_0,...,e_n]
      */
+
     public ImList<E> add(E e);
 
     /**
@@ -58,6 +59,7 @@ public interface ImList<E> extends Iterable<E> {
      * @return true if this contains no elements
      */
     public boolean isEmpty();
+
 
     /**
      * see Iterable.iterator()

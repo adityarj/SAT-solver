@@ -14,143 +14,97 @@ import java.util.Iterator;
  * A simple DPLL SAT solver. See http://en.wikipedia.org/wiki/DPLL_algorithm
  */
 public class SATSolver {
-    /**
-     * Solve the problem using a simple version of DPLL with backtracking and
-     * unit propagation. The returned environment binds literals of class
-     * bool.Variable rather than the special literals used in clausification of
-     * class clausal.Literal, so that clients can more readily use it.
-     * 
-     * @return an environment for which the problem evaluates to Bool.TRUE, or
-     *         null if no such environment exists.
-     */
 
     //preservation variable
     private static Variable x;
-
+    private static Clause smallest;
     public static Environment solve(Formula formula) {
         Environment env = new Environment();
-        return solve(formula.getClauses(),env);
+        return solve(formula.getClauses(), env);
     }
 
-    /**
-     * Takes a partial assignment of variables to values, and recursively
-     * searches for a complete satisfying assignment.
-     * 
-     * @param clauses
-     *            formula in conjunctive normal form
-     * @param env
-     *            assignment of some or all variables in clauses to true or
-     *            false values.
-     * @return an environment for which all the clauses evaluate to Bool.TRUE,
-     *         or null if no such environment exists.
-     */
     private static Environment solve(ImList<Clause> clauses, Environment env) {
+
+        smallest = clauses.first();
 
         if (clauses.size() == 1 && clauses.first().size() == 0) {
             return env;
-        } else {
+        } else if (smallest.isEmpty()) {
+            //Failure, start backtrack
+            return null;
 
-            Clause smallest = clauses.first();
-
-            for(Clause each: clauses) {
-
-
-                if (each.isEmpty()) {
-                    //Failure, start backtrack
-                    return null;
-
-                } else if (each.isUnit()) {
-
-                    //This clause MUST be true, substitute the literal in the other clauses
-                    if (each.chooseLiteral() instanceof PosLiteral) {
-                        env = env.putTrue(each.chooseLiteral().getVariable());
-                    } else {
-                        env = env.putFalse(each.chooseLiteral().getVariable());
-                    }
-
-                    clauses = substitute(clauses,each.chooseLiteral());
-
-                    try {
-                        clauses = clauses.remove(each);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-
-
-                } else {
-
-                    //Finding the smallest clause
-                    if (smallest.size() > each.size()) {
-                        smallest = each;
-                    }
-                }
-            }
-
-
+        } else if (smallest.isUnit()) {
             //the idea is to choose the first literal from the smallest clause and evaluate to true
             x = smallest.chooseLiteral().getVariable();
-
+            //System.out.println(x);
             if (smallest.chooseLiteral() instanceof PosLiteral) {
-                env = env.putTrue(smallest.chooseLiteral().getVariable());
+                env = env.putTrue(x);
             } else {
-                env = env.putFalse(smallest.chooseLiteral().getVariable());
+                env = env.putFalse(x);
             }
 
-            clauses = substitute(clauses,smallest.chooseLiteral());
-
-            Environment temp = solve(clauses,env);
-
-            if (temp == null) {
-                if (env.get(x) == Bool.FALSE) {
-                    env.putTrue(x);
-                } else {
-                    env.putFalse(x);
-                }
-
-                return solve(clauses,env);
-
+            clauses = substitute(clauses, smallest.chooseLiteral());
+        } else {
+            x = smallest.chooseLiteral().getVariable();
+            //System.out.println(x);
+            if (smallest.chooseLiteral() instanceof PosLiteral) {
+                env = env.putFalse(x);
             } else {
-                return temp;
+                env = env.putTrue(x);
             }
+
+            clauses = substitute(clauses, smallest.chooseLiteral());
+
         }
+        Environment temp = solve(clauses, env);
 
+        if (temp == null) {
 
+            if (env.get(x) == Bool.FALSE) {
+                env = env.putTrue(x);
+            } else {
+                env = env.putFalse(x);
+            }
+
+            return solve(clauses, env);
+
+        } else {
+
+            return temp;
+
+        }
     }
 
-    /**
-     * given a clause list and literal, produce a new list resulting from
-     * setting that literal to true
-     * 
-     * @param clauses
-     *            , a list of clauses
-     * @param l
-     *            , a literal to set to true
-     * @return a new list of clauses resulting from setting l to true
-     */
-    private static ImList<Clause> substitute(ImList<Clause> clauses,
-            Literal l) {
 
-        Clause c = clauses.first().reduce(l);
+
+
+    private static ImList<Clause> substitute(ImList<Clause> clauses, Literal l) {
+        //Take in a list of clauses. and a literal and give out a reduced list of clauses, with sorting.,
+        Clause temp;
         ImList<Clause> newClauseList = null;
-        if (c != null) {
-            newClauseList = new NonEmptyImList<>(c);
-        }
+        Clause small = null;
 
-        for (Clause each: clauses) {
-            if (! (each.equals(clauses.first()))) {
+        //Smallest is the smallest clause
+        for (Clause each : clauses) {
+            temp = each.reduce(l);
+            //Create a new list, and copy the contents of the reduction into the new list\
 
-                c = each.reduce(l);
-
-                if (c != null && newClauseList==null) {
-                    newClauseList = new NonEmptyImList<>(c);
+            if (temp != null && newClauseList == null) {
+                small  = temp;
+                newClauseList = new NonEmptyImList<>(small);
+            } else if (temp != null) {
+                if (temp.size() < small.size()) {
+                    small = temp;
                 }
+                newClauseList = newClauseList.add(temp);
+            } else {
 
-                if (c != null) {
-                    newClauseList = newClauseList.add(c);
-
-                }
             }
         }
+
+        newClauseList = newClauseList.remove(small);
+        newClauseList = newClauseList.add(small);
+
         return newClauseList;
     }
 

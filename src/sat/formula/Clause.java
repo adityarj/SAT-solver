@@ -65,6 +65,7 @@ public class Clause implements Iterable<Literal> {
     /**
      * @return a clause contain a single literal
      */
+
     public Clause(Literal literal) {
         this(new NonEmptyImList<Literal>(literal));
         checkRep();
@@ -100,6 +101,7 @@ public class Clause implements Iterable<Literal> {
     public boolean isEmpty() {
         return size() == 0;
     }
+
 
     /**
      * @return number of literals in this clause
