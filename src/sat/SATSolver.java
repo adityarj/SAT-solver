@@ -16,8 +16,7 @@ import java.util.Iterator;
 public class SATSolver {
 
     //preservation variable
-    private static Variable x;
-    private static Clause smallest;
+
     public static Environment solve(Formula formula) {
         Environment env = new Environment();
         return solve(formula.getClauses(), env);
@@ -25,7 +24,9 @@ public class SATSolver {
 
     private static Environment solve(ImList<Clause> clauses, Environment env) {
 
-        smallest = clauses.first();
+        Clause smallest = clauses.first();
+        Literal x;
+        Environment temp;
 
         if (clauses.isEmpty() || smallest == null) {
             return env;
@@ -35,75 +36,61 @@ public class SATSolver {
 
         } else if (smallest.isUnit()) {
             //the idea is to choose the first literal from the smallest clause and evaluate to true
-            x = smallest.chooseLiteral().getVariable();
+            x = smallest.chooseLiteral();
             //System.out.println(x);
-            if (smallest.chooseLiteral() instanceof PosLiteral) {
-                env = env.putTrue(x);
+            if (x instanceof PosLiteral) {
+                return solve(substitute(clauses,x),env.putTrue(x.getVariable()));
             } else {
-                env = env.putFalse(x);
+                return solve(substitute(clauses,x),env.putFalse(x.getVariable()));
             }
-
-            clauses = substitute(clauses, smallest.chooseLiteral());
-
-            return solve(clauses,env);
         } else {
-            x = smallest.chooseLiteral().getVariable();
+            x = smallest.chooseLiteral();
             //System.out.println(x);
-            if (smallest.chooseLiteral() instanceof PosLiteral) {
-                env = env.putFalse(x);
+            if (x instanceof PosLiteral) {
+                 temp = solve(substitute(clauses,x), env.putTrue(x.getVariable()));
             } else {
-                env = env.putTrue(x);
+                 temp = solve(substitute(clauses,x), env.putFalse(x.getVariable()));
             }
-            clauses = substitute(clauses, smallest.chooseLiteral());
         }
-        Environment temp = solve(clauses, env);
 
         if (temp == null) {
 
-            if (env.get(x) == Bool.FALSE) {
-                env = env.putTrue(x);
-            } else {
-                env = env.putFalse(x);
-            }
-
-            if (smallest.chooseLiteral() == null) {
-                return null;
-            } else {
-                clauses = substitute(clauses, smallest.chooseLiteral().getNegation() );
-                return solve(clauses, env);
-            }
+            return solve(substitute(clauses,smallest.chooseLiteral()), env.putFalse(x.getVariable()));
 
         } else {
-
             return temp;
-
         }
     }
 
     private static ImList<Clause> substitute(ImList<Clause> clauses, Literal l) {
         //Take in a list of clauses. and a literal and give out a reduced list of clauses, with sorting.,
-        Clause temp;
         ImList<Clause> newClauseList = new EmptyImList<>();
         Clause small = null;
+        Clause inter;
 
         //Smallest is the smallest clause
         for (Clause each : clauses) {
-            temp = each.reduce(l);
+            inter = each.reduce(l);
             //Create a new list, and copy the contents of the reduction into the new list\
 
-            if (temp != null && newClauseList.size() == 0) {
-                small  = temp;
-                newClauseList = newClauseList.add(temp);
-            } else if (temp != null) {
-                if (temp.size() < small.size()) {
-                    small = temp;
+            if (inter != null ) {
+                if (small == null) {
+                    small  = inter;
+                } else {
+                    if (inter.size() < small.size()) {
+                        newClauseList = newClauseList.add(small);
+                        small = inter;
+                    } else {
+                        newClauseList = newClauseList.add(inter);
+                    }
                 }
-                newClauseList = newClauseList.add(temp);
             }
         }
 
-        newClauseList = newClauseList.remove(small);
-        newClauseList = newClauseList.add(small);
+        if (small != null) {
+            newClauseList = newClauseList.add(small);
+        }
+
 
         return newClauseList;
     }

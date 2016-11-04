@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
 
 
 public class SATSolverTest {
@@ -73,7 +75,14 @@ public class SATSolverTest {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
+
+        System.out.println("Sat Solver Starts!!");
+        long started = System.nanoTime();
         Environment env = SATSolver.solve(ClauseFormula);
+
+        long time = System.nanoTime();
+
+        System.out.println("Time taken: "+((time - started)/(Math.pow(10,6))) + "ms");
 
         System.out.println(env);
 
