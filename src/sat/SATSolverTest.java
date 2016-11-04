@@ -42,7 +42,7 @@ public class SATSolverTest {
 
         try {
 
-            br = new BufferedReader(new FileReader("bin/sat/s8Sat.cnf"));
+            br = new BufferedReader(new FileReader("bin/sat/largeSat.cnf"));
             String line = br.readLine();
 
             while (line!= null) {

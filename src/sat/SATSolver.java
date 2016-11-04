@@ -27,9 +27,7 @@ public class SATSolver {
 
         smallest = clauses.first();
 
-
-        System.out.println(clauses);
-        if (clauses.size() == 0) {
+        if (clauses.isEmpty() || smallest == null) {
             return env;
         } else if (smallest.isEmpty()) {
             //Failure, start backtrack
@@ -68,9 +66,12 @@ public class SATSolver {
                 env = env.putFalse(x);
             }
 
-            clauses = substitute(clauses, smallest.chooseLiteral().getNegation());
-
-            return solve(clauses, env);
+            if (smallest.chooseLiteral() == null) {
+                return null;
+            } else {
+                clauses = substitute(clauses, smallest.chooseLiteral().getNegation() );
+                return solve(clauses, env);
+            }
 
         } else {
 
